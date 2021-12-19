@@ -1,7 +1,4 @@
 INDEX VERSION 1.131+/Users/giuseppecostabile/Documents/Università📚/O.O/Progetto1/Progetto/.metadata/.plugins/org.eclipse.jdt.core
-3468314333.index
-2429367026.index
-1398817537.index
 1865797976.index
-287775622.index
-3703194086.index
+3468314333.index
+1924484980.index
