@@ -449,7 +449,7 @@
 											"top": 450,
 											"width": 141.26708984375,
 											"height": 13,
-											"text": "+orario inizio",
+											"text": "+orarioInizio",
 											"horizontalAlignment": 0
 										}
 									],
@@ -4089,8 +4089,7 @@
 							"_parent": {
 								"$ref": "AAAAAAF90henTxN2Edw="
 							},
-							"name": "orario inizio",
-							"type": ""
+							"name": "orarioInizio"
 						}
 					]
 				},
