@@ -1060,7 +1060,7 @@
 											"top": 519,
 											"width": 119,
 											"height": 13,
-											"text": "Studenti"
+											"text": "Studente"
 										},
 										{
 											"_type": "LabelView",
@@ -4129,7 +4129,7 @@
 					"_parent": {
 						"$ref": "AAAAAAFF+qBWK6M3Z8Y="
 					},
-					"name": "Studenti",
+					"name": "Studente",
 					"ownedElements": [
 						{
 							"_type": "UMLAssociation",
