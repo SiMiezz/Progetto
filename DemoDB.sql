@@ -173,6 +173,7 @@ CREATE TABLE `partecipa` (
   `orario` time DEFAULT NULL,
   `matricola` varchar(15) NOT NULL,
   `idlezione` int NOT NULL,
+  UNIQUE KEY `Partecipa_UNIQUE` (`idlezione`,`matricola`),
   KEY `Fk_studente_idx` (`matricola`),
   KEY `Fk_lezione_idx` (`idlezione`),
   CONSTRAINT `Fk_lezione` FOREIGN KEY (`idlezione`) REFERENCES `lezione` (`idlezione`) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -227,4 +228,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-12-27 21:03:15
+-- Dump completed on 2021-12-27 21:49:19
