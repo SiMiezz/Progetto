@@ -41,6 +41,7 @@ CREATE TABLE `areetematiche` (
 
 LOCK TABLES `areetematiche` WRITE;
 /*!40000 ALTER TABLE `areetematiche` DISABLE KEYS */;
+INSERT INTO `areetematiche` VALUES ('informatica','studio dell\'hardware',53),('matematica','',52);
 /*!40000 ALTER TABLE `areetematiche` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -58,10 +59,11 @@ CREATE TABLE `corsoformazione` (
   `presenzemin` int NOT NULL,
   `maxpartecipanti` int NOT NULL,
   `id` varchar(30) NOT NULL,
+  `terminato` tinyint NOT NULL DEFAULT '0',
   PRIMARY KEY (`idcorso`),
   KEY `Fk_op_idx` (`id`),
   CONSTRAINT `Fk_op` FOREIGN KEY (`id`) REFERENCES `operatore` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=51 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=57 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -70,7 +72,7 @@ CREATE TABLE `corsoformazione` (
 
 LOCK TABLES `corsoformazione` WRITE;
 /*!40000 ALTER TABLE `corsoformazione` DISABLE KEYS */;
-INSERT INTO `corsoformazione` VALUES (50,'informatica','word',50,50,'1155');
+INSERT INTO `corsoformazione` VALUES (50,'informatica','word',50,50,'1155',0),(51,'programmazione','java',40,120,'1155',0),(52,'algebra','limiti',30,140,'1155',0),(53,'ade','circuiti',30,100,'1155',0),(54,'laboratorio','c',40,100,'1255',0),(55,'object','java',50,80,'1255',0),(56,'fisica','vettori',30,50,'1255',0);
 /*!40000 ALTER TABLE `corsoformazione` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -120,7 +122,7 @@ CREATE TABLE `lezione` (
   PRIMARY KEY (`idlezione`),
   KEY `Fk_corsi_idx` (`idcorso`),
   CONSTRAINT `Fk_corsi` FOREIGN KEY (`idcorso`) REFERENCES `corsoformazione` (`idcorso`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=79 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=99 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -129,7 +131,7 @@ CREATE TABLE `lezione` (
 
 LOCK TABLES `lezione` WRITE;
 /*!40000 ALTER TABLE `lezione` DISABLE KEYS */;
-INSERT INTO `lezione` VALUES (74,'lezione 1','lezione informatica','02:00:00','2021-12-30','11:00:00',50),(75,'lezione 2','lezione informatica','02:00:00','2021-12-31','10:00:00',50),(76,'lezione 3','lezione informatica','02:00:00','2022-01-01','09:00:00',50),(77,'lezione 4','lezione informatica','02:00:00','2022-01-02','12:00:00',50),(78,'lezione 5','lezione informatica','02:00:00','2022-01-03','12:00:00',50);
+INSERT INTO `lezione` VALUES (74,'lezione 1','lezione informatica','02:00:00','2021-12-30','11:00:00',50),(75,'lezione 2','lezione informatica','02:00:00','2021-12-31','10:00:00',50),(76,'lezione 3','lezione informatica','02:00:00','2022-01-01','09:00:00',50),(77,'lezione 4','lezione informatica','02:00:00','2022-01-02','12:00:00',50),(78,'lezione 5','lezione informatica','02:00:00','2022-01-03','12:00:00',50),(79,'lezione 1','lezione programmazione','02:00:00','2021-12-30','16:00:00',51),(80,'lezione 2','lezione programmazione','02:00:00','2021-12-31','18:00:00',51),(81,'lezione 3','lezione programmazione','02:00:00','2022-01-01','17:00:00',51),(82,'lezione 4','lezione programmazione','02:00:00','2022-01-02','12:00:00',51),(83,'lezione 5','lezione programmazione','02:00:00','2022-01-03','12:00:00',51),(84,'lezione 6','lezione programmazione','02:00:00','2022-01-04','09:00:00',51),(85,'lezione 1','lezione algebra','02:00:00','2021-12-30','13:00:00',52),(86,'lezione 2','lezione algebra','02:00:00','2021-12-31','14:00:00',52),(87,'lezione 3','lezione algebra','02:00:00','2022-01-01','16:00:00',52),(88,'lezione 4','lezione algebra','02:00:00','2022-01-02','12:00:00',52),(89,'lezione 5','lezione algebra','02:00:00','2022-01-03','17:00:00',52),(90,'lezione 1','lezione ade','02:00:00','2021-12-30','10:00:00',53),(91,'lezione 2','lezione ade','02:00:00','2021-12-31','18:00:00',53),(92,'lezione 3','lezione ade','02:00:00','2022-01-01','14:00:00',53),(93,'lezione 1','lezione laboratorio','02:00:00','2021-12-30','12:00:00',54),(94,'lezione 2','lezione laboratorio','02:00:00','2021-12-31','12:00:00',54),(95,'lezione 3','lezione laboratorio','02:00:00','2022-01-01','11:00:00',54),(96,'lezione 1','lezione object','02:00:00','2021-12-30','11:00:00',55),(97,'lezione 1','lezione fisica','02:00:00','2021-12-30','10:00:00',56),(98,'lezione 2','lezione fisica','02:00:00','2021-12-31','14:00:00',56);
 /*!40000 ALTER TABLE `lezione` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -199,15 +201,16 @@ DROP TABLE IF EXISTS `statistiche`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `statistiche` (
   `idstatistiche` int NOT NULL AUTO_INCREMENT,
-  `mediostud` int DEFAULT NULL,
-  `minstud` int DEFAULT NULL,
-  `maxstud` int DEFAULT NULL,
-  `riempimentomedio` int DEFAULT NULL,
+  `mediostud` int NOT NULL,
+  `minstud` int NOT NULL,
+  `maxstud` int NOT NULL,
+  `riempimentomedio` int NOT NULL,
   `idcorso` int NOT NULL,
   PRIMARY KEY (`idstatistiche`),
+  UNIQUE KEY `idcorso_UNIQUE` (`idcorso`),
   KEY `Fk_corsoformaz_idx` (`idcorso`),
   CONSTRAINT `Fk_corsoformaz` FOREIGN KEY (`idcorso`) REFERENCES `corsoformazione` (`idcorso`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -216,7 +219,7 @@ CREATE TABLE `statistiche` (
 
 LOCK TABLES `statistiche` WRITE;
 /*!40000 ALTER TABLE `statistiche` DISABLE KEYS */;
-INSERT INTO `statistiche` VALUES (1,5,5,5,10,50);
+INSERT INTO `statistiche` VALUES (1,5,5,5,10,50),(2,0,0,0,0,51),(3,0,0,0,0,52),(4,0,0,0,0,53),(5,0,0,0,0,54),(6,0,0,0,0,55),(7,0,0,0,0,56);
 /*!40000 ALTER TABLE `statistiche` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -248,6 +251,34 @@ LOCK TABLES `studente` WRITE;
 INSERT INTO `studente` VALUES ('6600','gospi','gospel','2000-01-02','5566','ok'),('6615','simone','giordano','2001-02-07','4455','ok'),('6625','giordi','giordi','1998-02-09','7798','ok'),('6635','ferdi','giordi','2002-08-09','345678','ok'),('6645','toni','effe','2000-09-09','12345678','ok');
 /*!40000 ALTER TABLE `studente` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `superamento`
+--
+
+DROP TABLE IF EXISTS `superamento`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `superamento` (
+  `superato` tinyint DEFAULT NULL,
+  `matricola` varchar(15) NOT NULL,
+  `idcorso` int NOT NULL,
+  UNIQUE KEY `stud_UNIQUE` (`matricola`,`idcorso`),
+  KEY `Fk_studente_idx` (`matricola`),
+  KEY `Fk_corso1_idx` (`idcorso`),
+  CONSTRAINT `Fk_corso1` FOREIGN KEY (`idcorso`) REFERENCES `corsoformazione` (`idcorso`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `Fk_studente1` FOREIGN KEY (`matricola`) REFERENCES `studente` (`matricola`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `superamento`
+--
+
+LOCK TABLES `superamento` WRITE;
+/*!40000 ALTER TABLE `superamento` DISABLE KEYS */;
+/*!40000 ALTER TABLE `superamento` ENABLE KEYS */;
+UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -258,4 +289,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-12-29 20:24:34
+-- Dump completed on 2021-12-30  0:37:28
