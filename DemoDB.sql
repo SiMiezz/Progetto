@@ -44,7 +44,6 @@ CREATE TABLE `areetematiche` (
 
 LOCK TABLES `areetematiche` WRITE;
 /*!40000 ALTER TABLE `areetematiche` DISABLE KEYS */;
-INSERT INTO `areetematiche` VALUES ('informazione','',57,'1155'),('logica','applicata',60,'1255'),('matematica','base',59,'1155'),('tecnologia','avanzata',57,'1155');
 /*!40000 ALTER TABLE `areetematiche` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -56,7 +55,7 @@ UNLOCK TABLES;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `areetematiche_BEFORE_INSERT` BEFORE INSERT ON `areetematiche` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `NoArea_IF_OperatoreNoCorso` BEFORE INSERT ON `areetematiche` FOR EACH ROW BEGIN
 
 IF new.id NOT IN (SELECT cs.id FROM corsoformazione AS cs WHERE cs.idcorso = new.idcorso AND cs.id = new.id) THEN
 SIGNAl SQLSTATE '45000' SET MESSAGE_TEXT = 'ERROR';
@@ -83,11 +82,10 @@ CREATE TABLE `corsoformazione` (
   `presenzemin` int NOT NULL,
   `maxpartecipanti` int NOT NULL,
   `id` varchar(30) NOT NULL,
-  `terminato` tinyint NOT NULL DEFAULT '0',
   PRIMARY KEY (`idcorso`),
   KEY `Fk_op_idx` (`id`),
   CONSTRAINT `Fk_op` FOREIGN KEY (`id`) REFERENCES `operatore` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=61 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=67 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -96,7 +94,7 @@ CREATE TABLE `corsoformazione` (
 
 LOCK TABLES `corsoformazione` WRITE;
 /*!40000 ALTER TABLE `corsoformazione` DISABLE KEYS */;
-INSERT INTO `corsoformazione` VALUES (57,'informatica','word',50,120,'1155',0),(58,'algebra','polinomi',30,120,'1155',0),(59,'analisi','limiti',60,200,'1155',0),(60,'algoritmi','sorting',40,120,'1255',0);
+INSERT INTO `corsoformazione` VALUES (61,'informatica','word',30,120,'1155'),(62,'algebra','polinomi',40,200,'1155'),(63,'analisi','limiti',50,250,'1155'),(64,'algoritmi','sorting',40,120,'1255'),(65,'ade','circuiti',25,125,'1255'),(66,'laboratorio','java',50,50,'1155');
 /*!40000 ALTER TABLE `corsoformazione` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -119,83 +117,6 @@ INSERT INTO lezione(titolo,descrizione,durata,datainizio,orarioinizio,idcorso) V
 SET i = i+1;
 
 END WHILE;
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `aggiungi_statistiche` AFTER UPDATE ON `corsoformazione` FOR EACH ROW BEGIN
-DECLARE
-partecipazioni,numlezioni,minpartecipa,maxpartecipa,riempimedio,mediastud INT;
-
-DECLARE stp INT DEFAULT 0;
-DECLARE mat VARCHAR(15) DEFAULT null;
-DECLARE visualizzazioni INT DEFAULT 0;
-
-DECLARE studcurr
-CURSOR FOR SELECT studvisual.matricola, studvisual.visual
-FROM (SELECT COUNT(par.matricola) visual,isc.matricola 
-FROM (lezione AS lez JOIN partecipa AS par ON lez.idlezione = par.idlezione) RIGHT JOIN iscritto AS isc ON par.matricola = isc.matricola
-WHERE isc.idcorso = new.idcorso
-GROUP BY (isc.matricola)) as studvisual;
-
-DECLARE CONTINUE HANDLER FOR NOT FOUND SET stp = 1;
-
-SET partecipazioni = 0, numlezioni = 0, minpartecipa = 0, maxpartecipa = 0, riempimedio = 0, mediastud = 0;
-
-IF new.terminato = true AND old.terminato = false THEN
-SELECT COUNT(*) INTO partecipazioni 
-FROM lezione AS lez JOIN partecipa AS par ON lez.idlezione = par.idlezione
-WHERE lez.idcorso = new.idcorso;
-
-SELECT COUNT(*) INTO numlezioni
-FROM lezione AS lez 
-WHERE lez.idcorso = new.idcorso;
-
-SET mediastud = partecipazioni/numlezioni;
-
-SELECT MIN(parlez) INTO minpartecipa
-FROM (SELECT COUNT(*) parlez,lez.idlezione 
-FROM lezione AS lez JOIN partecipa AS par ON lez.idlezione = par.idlezione
-WHERE lez.idcorso = new.idcorso
-GROUP BY lez.idlezione) as conto;
-
-SELECT MAX(parlez) INTO maxpartecipa
-FROM (SELECT COUNT(*) parlez,lez.idlezione 
-FROM lezione AS lez JOIN partecipa AS par ON lez.idlezione = par.idlezione
-WHERE lez.idcorso = new.idcorso
-GROUP BY lez.idlezione) as conto;
-
-INSERT INTO statistiche(mediostud,minstud,maxstud,riempimentomedio,idcorso) VALUES (mediastud,minpartecipa,maxpartecipa,((mediastud/new.maxpartecipanti)*100),new.idcorso);
-
-OPEN studcurr;
-
-cursor_loop: LOOP
-	FETCH studcurr INTO mat,visualizzazioni;
-    IF stp = 1 THEN
-		LEAVE cursor_loop;
-	END IF;
-    IF visualizzazioni >= ((new.presenzemin * (SELECT COUNT(*) FROM lezione AS lez WHERE lez.idcorso = new.idcorso))/100) THEN
-		INSERT INTO superamento(superato,matricola,idcorso) VALUES(true,mat,new.idcorso);
-    ELSE
-		INSERT INTO superamento(superato,matricola,idcorso) VALUES(false,mat,new.idcorso);
-    END IF;
-END LOOP cursor_loop;
-
-CLOSE studcurr;
-
-END IF;
-
 END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -227,9 +148,30 @@ CREATE TABLE `iscritto` (
 
 LOCK TABLES `iscritto` WRITE;
 /*!40000 ALTER TABLE `iscritto` DISABLE KEYS */;
-INSERT INTO `iscritto` VALUES ('6600',57);
+INSERT INTO `iscritto` VALUES ('6600',61),('6615',62),('6600',63),('6615',64),('6615',65),('6600',66),('6615',66),('6625',66);
 /*!40000 ALTER TABLE `iscritto` ENABLE KEYS */;
 UNLOCK TABLES;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `NoIscritto_IF_CorsoTermina` BEFORE INSERT ON `iscritto` FOR EACH ROW BEGIN
+
+IF new.idcorso NOT IN (SELECT corso.idcorso FROM corsoformazione AS corso LEFT JOIN terminazione AS ter ON corso.idcorso = ter.idcorso WHERE corso.idcorso = new.idcorso AND ter.id IS NULL ) THEN
+SIGNAl SQLSTATE '45000' SET MESSAGE_TEXT = 'ERROR';
+END IF;
+
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
 -- Table structure for table `lezione`
@@ -249,7 +191,7 @@ CREATE TABLE `lezione` (
   PRIMARY KEY (`idlezione`),
   KEY `Fk_corsi_idx` (`idcorso`),
   CONSTRAINT `Fk_corsi` FOREIGN KEY (`idcorso`) REFERENCES `corsoformazione` (`idcorso`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=119 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=147 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -258,9 +200,30 @@ CREATE TABLE `lezione` (
 
 LOCK TABLES `lezione` WRITE;
 /*!40000 ALTER TABLE `lezione` DISABLE KEYS */;
-INSERT INTO `lezione` VALUES (99,'lezione 1','lezione informatica','02:00:00','2022-01-01','10:00:00',57),(100,'lezione 2','lezione informatica','02:00:00','2022-01-02','18:00:00',57),(101,'lezione 3','lezione informatica','02:00:00','2022-01-03','16:00:00',57),(102,'lezione 4','lezione informatica','02:00:00','2022-01-04','09:00:00',57),(103,'lezione 5','lezione informatica','02:00:00','2022-01-05','10:00:00',57),(104,'lezione 6','lezione informatica','02:00:00','2022-01-06','14:00:00',57),(105,'lezione 7','lezione informatica','02:00:00','2022-01-07','16:00:00',57),(106,'lezione 1','lezione algebra','02:00:00','2022-01-01','14:00:00',58),(107,'lezione 2','lezione algebra','02:00:00','2022-01-02','17:00:00',58),(108,'lezione 3','lezione algebra','02:00:00','2022-01-03','15:00:00',58),(109,'lezione 4','lezione algebra','02:00:00','2022-01-04','16:00:00',58),(110,'lezione 5','lezione algebra','02:00:00','2022-01-05','13:00:00',58),(111,'lezione 1','lezione analisi','02:00:00','2022-01-01','11:00:00',59),(112,'lezione 2','lezione analisi','02:00:00','2022-01-02','15:00:00',59),(113,'lezione 3','lezione analisi','02:00:00','2022-01-03','12:00:00',59),(114,'lezione 1','lezione algoritmi','02:00:00','2022-01-02','13:00:00',60),(115,'lezione 2','lezione algoritmi','02:00:00','2022-01-03','09:00:00',60),(116,'lezione 3','lezione algoritmi','02:00:00','2022-01-04','15:00:00',60),(117,'lezione 4','lezione algoritmi','02:00:00','2022-01-05','11:00:00',60),(118,'lezione 5','lezione algoritmi','02:00:00','2022-01-06','09:00:00',60);
+INSERT INTO `lezione` VALUES (119,'lezione 1','lezione informatica','02:00:00','2022-01-03','14:00:00',61),(120,'lezione 2','lezione informatica','02:00:00','2022-01-04','12:00:00',61),(121,'lezione 3','lezione informatica','02:00:00','2022-01-05','16:00:00',61),(122,'lezione 4','lezione informatica','02:00:00','2022-01-06','17:00:00',61),(123,'lezione 1','lezione algebra','02:00:00','2022-01-03','16:00:00',62),(124,'lezione 2','lezione algebra','02:00:00','2022-01-04','17:00:00',62),(125,'lezione 3','lezione algebra','02:00:00','2022-01-05','10:00:00',62),(126,'lezione 4','lezione algebra','02:00:00','2022-01-06','12:00:00',62),(127,'lezione 1','lezione analisi','02:00:00','2022-01-03','13:00:00',63),(128,'lezione 2','lezione analisi','02:00:00','2022-01-04','16:00:00',63),(129,'lezione 1','lezione algoritmi','02:00:00','2022-01-03','10:00:00',64),(130,'lezione 2','lezione algoritmi','02:00:00','2022-01-04','13:00:00',64),(131,'lezione 3','lezione algoritmi','02:00:00','2022-01-05','14:00:00',64),(132,'lezione 4','lezione algoritmi','02:00:00','2022-01-06','14:00:00',64),(133,'lezione 5','lezione algoritmi','02:00:00','2022-01-07','11:00:00',64),(134,'lezione 6','lezione algoritmi','02:00:00','2022-01-08','18:00:00',64),(135,'lezione 1','lezione ade','02:00:00','2022-01-03','15:00:00',65),(136,'lezione 2','lezione ade','02:00:00','2022-01-04','09:00:00',65),(137,'lezione 3','lezione ade','02:00:00','2022-01-05','09:00:00',65),(138,'lezione 4','lezione ade','02:00:00','2022-01-06','15:00:00',65),(139,'lezione 5','lezione ade','02:00:00','2022-01-07','15:00:00',65),(140,'lezione 6','lezione ade','02:00:00','2022-01-08','17:00:00',65),(141,'lezione 7','lezione ade','02:00:00','2022-01-09','18:00:00',65),(142,'lezione 1','lezione laboratorio','02:00:00','2022-01-03','15:00:00',66),(143,'lezione 2','lezione laboratorio','02:00:00','2022-01-04','11:00:00',66),(144,'lezione 3','lezione laboratorio','02:00:00','2022-01-05','11:00:00',66),(145,'lezione 4','lezione laboratorio','02:00:00','2022-01-06','17:00:00',66),(146,'lezione 5','lezione laboratorio','02:00:00','2022-01-07','15:00:00',66);
 /*!40000 ALTER TABLE `lezione` ENABLE KEYS */;
 UNLOCK TABLES;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `NoLezione_IF_CorsoTermina` BEFORE INSERT ON `lezione` FOR EACH ROW BEGIN
+
+IF new.idcorso NOT IN (SELECT corso.idcorso FROM corsoformazione AS corso LEFT JOIN terminazione AS ter ON corso.idcorso = ter.idcorso WHERE corso.idcorso = new.idcorso AND ter.id IS NULL ) THEN
+SIGNAl SQLSTATE '45000' SET MESSAGE_TEXT = 'ERROR';
+END IF;
+
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
 -- Table structure for table `operatore`
@@ -287,7 +250,7 @@ CREATE TABLE `operatore` (
 
 LOCK TABLES `operatore` WRITE;
 /*!40000 ALTER TABLE `operatore` DISABLE KEYS */;
-INSERT INTO `operatore` VALUES ('1155','simi','giordi','1998-03-11','7788','ok'),('1255','giuseppe','costabile','1999-03-09','9988','ok');
+INSERT INTO `operatore` VALUES ('1155','giuseppe','giordi','1999-02-07','6677','ok'),('1255','gospi','gospel','2000-09-07','8899','ok');
 /*!40000 ALTER TABLE `operatore` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -315,6 +278,7 @@ CREATE TABLE `partecipa` (
 
 LOCK TABLES `partecipa` WRITE;
 /*!40000 ALTER TABLE `partecipa` DISABLE KEYS */;
+INSERT INTO `partecipa` VALUES ('6600',119),('6600',120),('6600',121),('6600',122),('6615',124),('6615',125),('6615',126),('6600',127),('6600',128),('6615',138),('6615',139),('6615',140),('6615',141),('6625',144),('6615',145),('6625',145),('6615',146),('6625',146);
 /*!40000 ALTER TABLE `partecipa` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -326,9 +290,9 @@ UNLOCK TABLES;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `partecipa_BEFORE_INSERT` BEFORE INSERT ON `partecipa` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `NoPartecipa_IF_LezioneNoIscritta_ECorsoTermina` BEFORE INSERT ON `partecipa` FOR EACH ROW BEGIN
 
-IF new.idlezione NOT IN (SELECT lez.idlezione FROM lezione AS lez JOIN iscritto AS isc ON lez.idcorso = isc.idcorso WHERE lez.idlezione = new.idlezione) THEN
+IF new.idlezione NOT IN (SELECT lez.idlezione FROM (lezione AS lez JOIN iscritto AS isc ON lez.idcorso = isc.idcorso ) LEFT JOIN terminazione AS ter ON ter.idcorso = lez.idcorso WHERE lez.idlezione = new.idlezione AND isc.matricola = new.matricola AND id IS NULL) THEN
 SIGNAl SQLSTATE '45000' SET MESSAGE_TEXT = 'ERROR';
 END IF;
 
@@ -357,7 +321,7 @@ CREATE TABLE `statistiche` (
   UNIQUE KEY `idcorso_UNIQUE` (`idcorso`),
   KEY `Fk_corsoformaz_idx` (`idcorso`),
   CONSTRAINT `Fk_corsoformaz` FOREIGN KEY (`idcorso`) REFERENCES `corsoformazione` (`idcorso`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -366,8 +330,30 @@ CREATE TABLE `statistiche` (
 
 LOCK TABLES `statistiche` WRITE;
 /*!40000 ALTER TABLE `statistiche` DISABLE KEYS */;
+INSERT INTO `statistiche` VALUES (18,1,1,1,1,62),(19,1,1,1,1,61),(20,1,1,1,0,63),(25,1,0,2,2,66);
 /*!40000 ALTER TABLE `statistiche` ENABLE KEYS */;
 UNLOCK TABLES;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `NoStat_IF_CorsoNoTermina` BEFORE INSERT ON `statistiche` FOR EACH ROW BEGIN
+
+IF new.idcorso NOT IN(SELECT ter.idcorso FROM terminazione AS ter WHERE ter.idcorso = new.idcorso) THEN
+SIGNAl SQLSTATE '45000' SET MESSAGE_TEXT = 'ERROR';
+END IF;
+
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
 -- Table structure for table `studente`
@@ -394,7 +380,7 @@ CREATE TABLE `studente` (
 
 LOCK TABLES `studente` WRITE;
 /*!40000 ALTER TABLE `studente` DISABLE KEYS */;
-INSERT INTO `studente` VALUES ('6600','gospi','gospel','2000-01-02','5566','ok'),('6615','simone','giordano','2001-02-07','4455','ok'),('6625','giordi','giordi','1998-02-09','7798','ok'),('6635','ferdi','giordi','2002-08-09','345678','ok'),('6645','toni','effe','2000-09-09','12345678','ok');
+INSERT INTO `studente` VALUES ('6600','simi','giordi','2001-02-09','5566','ok'),('6615','ferdi','giordi','2002-09-08','6699','ok'),('6625','kuki','giordi','1997-09-07','9988','ok');
 /*!40000 ALTER TABLE `studente` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -423,8 +409,162 @@ CREATE TABLE `superamento` (
 
 LOCK TABLES `superamento` WRITE;
 /*!40000 ALTER TABLE `superamento` DISABLE KEYS */;
+INSERT INTO `superamento` VALUES (1,'6600',61),(1,'6600',63),(0,'6600',66),(1,'6615',62),(0,'6615',66),(1,'6625',66);
 /*!40000 ALTER TABLE `superamento` ENABLE KEYS */;
 UNLOCK TABLES;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `NoSup_IF_CorsoNoTermina` BEFORE INSERT ON `superamento` FOR EACH ROW BEGIN
+
+IF new.idcorso NOT IN(SELECT ter.idcorso FROM terminazione AS ter WHERE ter.idcorso = new.idcorso) THEN
+SIGNAl SQLSTATE '45000' SET MESSAGE_TEXT = 'ERROR';
+END IF;
+
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+
+--
+-- Table structure for table `terminazione`
+--
+
+DROP TABLE IF EXISTS `terminazione`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `terminazione` (
+  `idcorso` int NOT NULL,
+  `id` varchar(30) NOT NULL,
+  UNIQUE KEY `idcorso_UNIQUE` (`idcorso`),
+  KEY `Fk_op1_idx` (`id`),
+  CONSTRAINT `Fk_corsoformazione1` FOREIGN KEY (`idcorso`) REFERENCES `corsoformazione` (`idcorso`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `Fk_op1` FOREIGN KEY (`id`) REFERENCES `operatore` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `terminazione`
+--
+
+LOCK TABLES `terminazione` WRITE;
+/*!40000 ALTER TABLE `terminazione` DISABLE KEYS */;
+INSERT INTO `terminazione` VALUES (61,'1155'),(62,'1155'),(63,'1155'),(66,'1155');
+/*!40000 ALTER TABLE `terminazione` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `noTermina_IF_opNoCorso` BEFORE INSERT ON `terminazione` FOR EACH ROW BEGIN
+
+IF new.id NOT IN (SELECT corso.id FROM corsoformazione AS corso WHERE corso.id = new.id AND corso.idcorso = new.idcorso) THEN
+SIGNAl SQLSTATE '45000' SET MESSAGE_TEXT = 'ERROR';
+END IF;
+
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `aggiungi_statistiche_superamento` AFTER INSERT ON `terminazione` FOR EACH ROW BEGIN
+DECLARE
+partecipazioni,numlezioni,minpartecipalez,maxpartecipalez,riempimedio,mediastud,minpresenze,maxpartecipa INT;
+
+DECLARE stp INT DEFAULT 0;
+DECLARE mat VARCHAR(15) DEFAULT null;
+DECLARE visualizzazioni INT DEFAULT 0;
+
+DECLARE studcurr
+CURSOR FOR SELECT studvisual.matricola, studvisual.visual
+FROM (SELECT COUNT(par.matricola) visual, isc.matricola
+FROM (lezione AS lez JOIN iscritto AS isc ON lez.idcorso = isc.idcorso) LEFT JOIN partecipa AS par ON isc.matricola = par.matricola AND par.idlezione = lez.idlezione
+WHERE lez.idcorso = new.idcorso
+GROUP BY(isc.matricola)) as studvisual;
+
+DECLARE CONTINUE HANDLER FOR NOT FOUND SET stp = 1;
+
+SET partecipazioni = 0, numlezioni = 0, minpartecipalez = 0, maxpartecipalez = 0, riempimedio = 0, mediastud = 0, maxpartecipa = 0, minpresenze = 0;
+
+SELECT COUNT(*) INTO partecipazioni
+FROM lezione AS lez JOIN partecipa AS par ON lez.idlezione = par.idlezione
+WHERE lez.idcorso = new.idcorso;
+
+SELECT COUNT(*) INTO numlezioni
+FROM lezione AS lez 
+WHERE lez.idcorso = new.idcorso;
+
+SET mediastud = partecipazioni/numlezioni;
+
+SELECT MIN(parlez) INTO minpartecipalez
+FROM (SELECT COUNT(par.idlezione) parlez,lez.idlezione 
+FROM lezione AS lez LEFT JOIN partecipa AS par ON lez.idlezione = par.idlezione
+WHERE lez.idcorso = new.idcorso
+GROUP BY (lez.idlezione)) as conto;
+
+SELECT MAX(parlez) INTO maxpartecipalez
+FROM (SELECT COUNT(par.idlezione) parlez,lez.idlezione 
+FROM lezione AS lez LEFT JOIN partecipa AS par ON lez.idlezione = par.idlezione
+WHERE lez.idcorso = new.idcorso
+GROUP BY (lez.idlezione)) as conto;
+
+SELECT corso.maxpartecipanti INTO maxpartecipa
+FROM corsoformazione AS corso
+WHERE corso.idcorso = new.idcorso;
+
+SELECT corso.presenzemin INTO minpresenze
+FROM corsoformazione AS corso
+WHERE corso.idcorso = new.idcorso;
+
+SET riempimedio = (mediastud/maxpartecipa)*100;
+
+INSERT INTO statistiche(mediostud,minstud,maxstud,riempimentomedio,idcorso) VALUES (mediastud,minpartecipalez,maxpartecipalez,riempimedio,new.idcorso);
+
+OPEN studcurr;
+
+cursor_loop: LOOP
+	FETCH studcurr INTO mat,visualizzazioni;
+    IF stp = 1 THEN
+		LEAVE cursor_loop;
+	END IF;
+    IF visualizzazioni >= (minpresenze * numlezioni)/100 THEN
+		INSERT INTO superamento(superato,matricola,idcorso) VALUES(true,mat,new.idcorso);
+    ELSE
+		INSERT INTO superamento(superato,matricola,idcorso) VALUES(false,mat,new.idcorso);
+    END IF;
+END LOOP cursor_loop;
+
+CLOSE studcurr;
+
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
 -- Dumping events for database 'demodb'
@@ -443,4 +583,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2022-01-01 18:05:23
+-- Dump completed on 2022-01-02 19:26:10
