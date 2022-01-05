@@ -79,13 +79,15 @@ CREATE TABLE `corsoformazione` (
   `idcorso` int NOT NULL AUTO_INCREMENT,
   `nome` varchar(30) NOT NULL,
   `descrizione` text,
+  `datacreazione` date NOT NULL,
   `presenzemin` int NOT NULL,
   `maxpartecipanti` int NOT NULL,
   `id` varchar(30) NOT NULL,
   PRIMARY KEY (`idcorso`),
   KEY `Fk_op_idx` (`id`),
-  CONSTRAINT `Fk_op` FOREIGN KEY (`id`) REFERENCES `operatore` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=67 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  CONSTRAINT `Fk_op` FOREIGN KEY (`id`) REFERENCES `operatore` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `percentuale_presenze` CHECK (((`presenzemin` >= 0) and (`presenzemin` <= 100)))
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -94,7 +96,7 @@ CREATE TABLE `corsoformazione` (
 
 LOCK TABLES `corsoformazione` WRITE;
 /*!40000 ALTER TABLE `corsoformazione` DISABLE KEYS */;
-INSERT INTO `corsoformazione` VALUES (61,'informatica','word',30,120,'1155'),(62,'algebra','polinomi',40,200,'1155'),(63,'analisi','limiti',50,250,'1155'),(64,'algoritmi','sorting',40,120,'1255'),(65,'ade','circuiti',25,125,'1255'),(66,'laboratorio','java',50,50,'1155');
+INSERT INTO `corsoformazione` VALUES (1,'informatica','word','2022-01-05',50,15,'1155'),(2,'algebra','polinomi','2022-01-05',30,20,'1155'),(3,'analisi','limiti','2022-01-05',60,30,'1155'),(4,'ade','circuiti','2022-01-05',20,25,'1255'),(5,'laboratorio','java','2022-01-05',25,10,'1255');
 /*!40000 ALTER TABLE `corsoformazione` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -148,7 +150,7 @@ CREATE TABLE `iscritto` (
 
 LOCK TABLES `iscritto` WRITE;
 /*!40000 ALTER TABLE `iscritto` DISABLE KEYS */;
-INSERT INTO `iscritto` VALUES ('6600',61),('6615',62),('6600',63),('6615',64),('6615',65),('6600',66),('6615',66),('6625',66);
+INSERT INTO `iscritto` VALUES ('6615',2),('6600',3),('6615',3),('6600',5),('6615',5);
 /*!40000 ALTER TABLE `iscritto` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -191,7 +193,7 @@ CREATE TABLE `lezione` (
   PRIMARY KEY (`idlezione`),
   KEY `Fk_corsi_idx` (`idcorso`),
   CONSTRAINT `Fk_corsi` FOREIGN KEY (`idcorso`) REFERENCES `corsoformazione` (`idcorso`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=147 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -200,7 +202,7 @@ CREATE TABLE `lezione` (
 
 LOCK TABLES `lezione` WRITE;
 /*!40000 ALTER TABLE `lezione` DISABLE KEYS */;
-INSERT INTO `lezione` VALUES (119,'lezione 1','lezione informatica','02:00:00','2022-01-03','14:00:00',61),(120,'lezione 2','lezione informatica','02:00:00','2022-01-04','12:00:00',61),(121,'lezione 3','lezione informatica','02:00:00','2022-01-05','16:00:00',61),(122,'lezione 4','lezione informatica','02:00:00','2022-01-06','17:00:00',61),(123,'lezione 1','lezione algebra','02:00:00','2022-01-03','16:00:00',62),(124,'lezione 2','lezione algebra','02:00:00','2022-01-04','17:00:00',62),(125,'lezione 3','lezione algebra','02:00:00','2022-01-05','10:00:00',62),(126,'lezione 4','lezione algebra','02:00:00','2022-01-06','12:00:00',62),(127,'lezione 1','lezione analisi','02:00:00','2022-01-03','13:00:00',63),(128,'lezione 2','lezione analisi','02:00:00','2022-01-04','16:00:00',63),(129,'lezione 1','lezione algoritmi','02:00:00','2022-01-03','10:00:00',64),(130,'lezione 2','lezione algoritmi','02:00:00','2022-01-04','13:00:00',64),(131,'lezione 3','lezione algoritmi','02:00:00','2022-01-05','14:00:00',64),(132,'lezione 4','lezione algoritmi','02:00:00','2022-01-06','14:00:00',64),(133,'lezione 5','lezione algoritmi','02:00:00','2022-01-07','11:00:00',64),(134,'lezione 6','lezione algoritmi','02:00:00','2022-01-08','18:00:00',64),(135,'lezione 1','lezione ade','02:00:00','2022-01-03','15:00:00',65),(136,'lezione 2','lezione ade','02:00:00','2022-01-04','09:00:00',65),(137,'lezione 3','lezione ade','02:00:00','2022-01-05','09:00:00',65),(138,'lezione 4','lezione ade','02:00:00','2022-01-06','15:00:00',65),(139,'lezione 5','lezione ade','02:00:00','2022-01-07','15:00:00',65),(140,'lezione 6','lezione ade','02:00:00','2022-01-08','17:00:00',65),(141,'lezione 7','lezione ade','02:00:00','2022-01-09','18:00:00',65),(142,'lezione 1','lezione laboratorio','02:00:00','2022-01-03','15:00:00',66),(143,'lezione 2','lezione laboratorio','02:00:00','2022-01-04','11:00:00',66),(144,'lezione 3','lezione laboratorio','02:00:00','2022-01-05','11:00:00',66),(145,'lezione 4','lezione laboratorio','02:00:00','2022-01-06','17:00:00',66),(146,'lezione 5','lezione laboratorio','02:00:00','2022-01-07','15:00:00',66);
+INSERT INTO `lezione` VALUES (1,'lezione 1','lezione informatica','02:00:00','2022-01-06','11:00:00',1),(2,'lezione 1','lezione algebra','02:00:00','2022-01-06','18:00:00',2),(3,'lezione 2','lezione algebra','02:00:00','2022-01-07','11:00:00',2),(4,'lezione 3','lezione algebra','02:00:00','2022-01-08','15:00:00',2),(5,'lezione 1','lezione analisi','02:00:00','2022-01-06','09:00:00',3),(6,'lezione 1','lezione ade','02:00:00','2022-01-06','17:00:00',4),(7,'lezione 2','lezione ade','02:00:00','2022-01-07','09:00:00',4),(8,'lezione 3','lezione ade','02:00:00','2022-01-08','11:00:00',4),(9,'lezione 4','lezione ade','02:00:00','2022-01-09','13:00:00',4),(10,'lezione 5','lezione ade','02:00:00','2022-01-10','15:00:00',4),(11,'lezione 6','lezione ade','02:00:00','2022-01-11','15:00:00',4),(12,'lezione 1','lezione laboratorio','02:00:00','2022-01-06','14:00:00',5),(13,'lezione 2','lezione laboratorio','02:00:00','2022-01-07','14:00:00',5),(14,'lezione 3','lezione laboratorio','02:00:00','2022-01-08','12:00:00',5),(15,'lezione 4','lezione laboratorio','02:00:00','2022-01-09','13:00:00',5),(16,'lezione 5','lezione laboratorio','02:00:00','2022-01-10','17:00:00',5);
 /*!40000 ALTER TABLE `lezione` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -278,7 +280,7 @@ CREATE TABLE `partecipa` (
 
 LOCK TABLES `partecipa` WRITE;
 /*!40000 ALTER TABLE `partecipa` DISABLE KEYS */;
-INSERT INTO `partecipa` VALUES ('6600',119),('6600',120),('6600',121),('6600',122),('6615',124),('6615',125),('6615',126),('6600',127),('6600',128),('6615',138),('6615',139),('6615',140),('6615',141),('6625',144),('6615',145),('6625',145),('6615',146),('6625',146);
+INSERT INTO `partecipa` VALUES ('6615',2),('6615',5),('6600',12),('6600',13),('6600',14);
 /*!40000 ALTER TABLE `partecipa` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -292,7 +294,7 @@ UNLOCK TABLES;
 DELIMITER ;;
 /*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `NoPartecipa_IF_LezioneNoIscritta_ECorsoTermina` BEFORE INSERT ON `partecipa` FOR EACH ROW BEGIN
 
-IF new.idlezione NOT IN (SELECT lez.idlezione FROM (lezione AS lez JOIN iscritto AS isc ON lez.idcorso = isc.idcorso ) LEFT JOIN terminazione AS ter ON ter.idcorso = lez.idcorso WHERE lez.idlezione = new.idlezione AND isc.matricola = new.matricola AND id IS NULL) THEN
+IF new.idlezione NOT IN (SELECT lez.idlezione FROM (lezione AS lez JOIN iscritto AS isc ON lez.idcorso = isc.idcorso ) LEFT JOIN terminazione AS ter ON ter.idcorso = lez.idcorso WHERE lez.idlezione = new.idlezione AND isc.matricola = new.matricola AND ter.id IS NULL) THEN
 SIGNAl SQLSTATE '45000' SET MESSAGE_TEXT = 'ERROR';
 END IF;
 
@@ -321,7 +323,7 @@ CREATE TABLE `statistiche` (
   UNIQUE KEY `idcorso_UNIQUE` (`idcorso`),
   KEY `Fk_corsoformaz_idx` (`idcorso`),
   CONSTRAINT `Fk_corsoformaz` FOREIGN KEY (`idcorso`) REFERENCES `corsoformazione` (`idcorso`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -330,7 +332,7 @@ CREATE TABLE `statistiche` (
 
 LOCK TABLES `statistiche` WRITE;
 /*!40000 ALTER TABLE `statistiche` DISABLE KEYS */;
-INSERT INTO `statistiche` VALUES (18,1,1,1,1,62),(19,1,1,1,1,61),(20,1,1,1,0,63),(25,1,0,2,2,66);
+INSERT INTO `statistiche` VALUES (1,1,1,1,3,3),(2,0,0,1,0,2);
 /*!40000 ALTER TABLE `statistiche` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -409,7 +411,7 @@ CREATE TABLE `superamento` (
 
 LOCK TABLES `superamento` WRITE;
 /*!40000 ALTER TABLE `superamento` DISABLE KEYS */;
-INSERT INTO `superamento` VALUES (1,'6600',61),(1,'6600',63),(0,'6600',66),(1,'6615',62),(0,'6615',66),(1,'6625',66);
+INSERT INTO `superamento` VALUES (0,'6600',3),(1,'6615',2),(1,'6615',3);
 /*!40000 ALTER TABLE `superamento` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -457,7 +459,7 @@ CREATE TABLE `terminazione` (
 
 LOCK TABLES `terminazione` WRITE;
 /*!40000 ALTER TABLE `terminazione` DISABLE KEYS */;
-INSERT INTO `terminazione` VALUES (61,'1155'),(62,'1155'),(63,'1155'),(66,'1155');
+INSERT INTO `terminazione` VALUES (2,'1155'),(3,'1155');
 /*!40000 ALTER TABLE `terminazione` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -583,4 +585,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2022-01-02 19:26:10
+-- Dump completed on 2022-01-05 19:44:08
